@@ -54,7 +54,7 @@ if (loginForm) {
         alert(`Login successful! Welcome ${data.name}`);
         window.location.href = 'members.html';
       } else {
-        alert(`Login failed: ${data.message || 'Invalid credentials'}`);
+        alert(`Login failed: ${data.message || 'Invalid credentials is here'}`);
       }
     } catch (err) {
       console.error('Login error:', err);
