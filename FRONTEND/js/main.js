@@ -103,10 +103,13 @@ if (loanForm) {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ amount, durationMonths })
       });
-
-      if (!res.ok) throw new Error('Loan request failed');
       const data = await res.json();
-
+      if (!res.ok) {
+    // Show backend error message
+    alert(`Error applying for loan: ${data.message}`);
+    return;
+  }
+//successfully applied for loan, show details
       const date = new Date(data.endDate);
      const formattedEndDate = `${String(date.getFullYear()).slice(-2)}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
 
@@ -114,13 +117,7 @@ if (loanForm) {
 Total Repayment: ₦${data.repaymentAmount.toFixed(2)}
 Monthly Repayment: ₦${data.monthlyRepayment.toFixed(2)}
 End Date: ${formattedEndDate}`);
-
-
-
-
-      loanForm.reset();
-    
-    } catch (err) {
+} catch (err) {
       alert('Error applying for loan: ' + err.message);
     }
   });
@@ -142,7 +139,7 @@ if (loanList && repaymentList) {
       const loans = await res.json();
 
       // Clear existing lists
-      
+
       loanList.innerHTML = '';
       repaymentList.innerHTML = '';
 
@@ -219,23 +216,46 @@ if (contributionForm) {
     alert(`Contribution of ₦${data.amount} added successfully!`);
   });
 
+  
+
+const contributionList = document.getElementById('contributionList');
+const totalContributionEl = document.getElementById('totalContribution');
+
+if (contributionList && totalContributionEl) {
   async function loadContributions() {
     const token = localStorage.getItem('token');
-    const res = await fetch('http://localhost:5000/api/contributions', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const contributions = await res.json();
-    const list = document.getElementById('contributionList');
-    list.innerHTML = '';
-    contributions.forEach(c => {
-      const li = document.createElement('li');
-      li.className = 'list-group-item';
-      li.textContent = `₦${c.amount} - ${new Date(c.date).toLocaleDateString()}`;
-      list.appendChild(li);
-    });
+    try {
+      const res = await fetch('http://localhost:5000/api/contributions', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to load contributions');
+      const contributions = await res.json();
+
+      contributionList.innerHTML = '';
+      let total = 0;
+
+      contributions.forEach(contribution => {
+        const date = new Date(contribution.date);
+        const formattedDate = `${String(date.getFullYear()).slice(-2)}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.innerHTML = `Amount: ₦${contribution.amount}, Date: ${formattedDate}`;
+        contributionList.appendChild(li);
+
+        total += contribution.amount;
+      });
+
+      // Display total contribution
+      totalContributionEl.innerText = `Total Contribution: ₦${total}`;
+    } catch (err) {
+      console.error('Load contributions error:', err);
+      contributionList.innerHTML = '<li class="list-group-item text-muted">No contributions found or failed to load.</li>';
+      totalContributionEl.innerText = '';
+    }
   }
   loadContributions();
 }
-
+}
 
 

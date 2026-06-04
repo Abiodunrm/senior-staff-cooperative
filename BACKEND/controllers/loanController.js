@@ -1,4 +1,5 @@
 const Loan = require('../models/Loan');
+const Contribution = require('../models/Contribution');
 
 // @desc    Apply for a new loan
 // @route   POST /api/loans/apply
@@ -14,6 +15,23 @@ const applyLoan = async (req, res) => {
 
     if (!Number.isFinite(amount) || amount <= 0) {
       return res.status(400).json({ message: 'Invalid loan amount.' });
+    }
+
+    // Calculate total contributions of the member
+    const contributions = await Contribution.find({ member: req.member._id });
+    const totalContribution = contributions.reduce((sum, c) => sum + c.amount, 0);
+
+    // Eligibility checks
+    if (amount > 2 * totalContribution) {
+      return res.status(400).json({
+        message: `Your maximum loan limit is 2 x totalContribution. Current limit: ₦${2 * totalContribution}`
+      });
+    }
+
+    if (totalContribution < amount / 2) {
+      return res.status(400).json({
+        message: `You must have at least half of the loan amount in contributions. Current total: ₦${totalContribution}`
+      });
     }
 
     // Interest rate logic
@@ -38,21 +56,20 @@ const applyLoan = async (req, res) => {
     endDate.setMonth(newMonth);
 
     // Repayment calculation
-const repaymentAmount = amount + (amount * (interestRate / 100));
-const monthlyRepayment = repaymentAmount / durationMonths;
+    const repaymentAmount = amount + (amount * (interestRate / 100));
+    const monthlyRepayment = repaymentAmount / durationMonths;
 
-// Create loan
-const loan = await Loan.create({
-  member: req.member._id,
-  amount,
-  durationMonths,
-  interestRate,
-  startDate,
-  endDate,
-  repaymentAmount,
-  monthlyRepayment
-});
-
+    // Create loan
+    const loan = await Loan.create({
+      member: req.member._id,
+      amount,
+      durationMonths,
+      interestRate,
+      startDate,
+      endDate,
+      repaymentAmount,
+      monthlyRepayment
+    });
 
     res.status(201).json(loan);
   } catch (error) {
@@ -60,9 +77,6 @@ const loan = await Loan.create({
     res.status(500).json({ message: 'Server error applying for loan' });
   }
 };
-
-
-
 
 // @desc    Get all loans for logged-in member
 // @route   GET /api/loans
@@ -77,5 +91,6 @@ const getLoans = async (req, res) => {
   }
 };
 
-
 module.exports = { applyLoan, getLoans };
+
+
