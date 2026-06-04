@@ -110,7 +110,14 @@ if (loanForm) {
       const date = new Date(data.endDate);
      const formattedEndDate = `${String(date.getFullYear()).slice(-2)}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
 
-     alert(`Loan of ₦${data.amount} for ${data.durationMonths} months applied successfully at ${data.interestRate}% interest! End date: ${formattedEndDate}`);
+     alert(`Loan of ₦${data.amount} for ${data.durationMonths} months applied successfully at ${data.interestRate}% interest!
+Total Repayment: ₦${data.repaymentAmount.toFixed(2)}
+Monthly Repayment: ₦${data.monthlyRepayment.toFixed(2)}
+End Date: ${formattedEndDate}`);
+
+
+
+
       loanForm.reset();
     
     } catch (err) {
@@ -119,8 +126,12 @@ if (loanForm) {
   });
 }
 
+
+
 const loanList = document.getElementById('loanList');
-if (loanList) {
+const repaymentList = document.getElementById('repaymentList');
+
+if (loanList && repaymentList) {
   async function loadLoans() {
     const token = localStorage.getItem('token');
     try {
@@ -130,23 +141,63 @@ if (loanList) {
       if (!res.ok) throw new Error('Failed to load loans');
       const loans = await res.json();
 
+      // Clear existing lists
+      
       loanList.innerHTML = '';
-      loans.forEach(loan => {
-        const date = new Date(loan.endDate);
-        const formattedEndDate = `${String(date.getFullYear()).slice(-2)}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+      repaymentList.innerHTML = '';
 
-        const li = document.createElement('li');
-        li.className = 'list-group-item';
-        li.innerHTML = `Amount: ₦${loan.amount}, Duration: ${loan.durationMonths} months, Interest: ${loan.interestRate}%, End Date: ${formattedEndDate}, Status: ${loan.status}`;
-        loanList.appendChild(li);
+      loans.forEach(loan => {
+        // Format dates
+        const endDate = new Date(loan.endDate);
+        const formattedEndDate = `${String(endDate.getFullYear()).slice(-2)}/${String(endDate.getMonth() + 1).padStart(2, '0')}/${String(endDate.getDate()).padStart(2, '0')}`;
+
+        const startDate = new Date(loan.startDate);
+        const formattedStartDate = `${String(startDate.getFullYear()).slice(-2)}/${String(startDate.getMonth() + 1).padStart(2, '0')}/${String(startDate.getDate()).padStart(2, '0')}`;
+
+        // Loan list item
+        const loanItem = document.createElement('li');
+        loanItem.className = 'list-group-item';
+        loanItem.innerHTML = `Amount: ₦${loan.amount}, Duration: ${loan.durationMonths} months, Interest: ${loan.interestRate}%, End Date: ${formattedEndDate}, Status: ${loan.status}`;
+        loanList.appendChild(loanItem);
+
+        // Repayment list item
+        const repaymentItem = document.createElement('li');
+        repaymentItem.className = 'list-group-item';
+        repaymentItem.innerHTML = `
+          Loan Amount: ₦${loan.amount}, 
+          Start Date: ${formattedStartDate}, 
+          End Date: ${formattedEndDate}, 
+          Total Repayment: ₦${loan.repaymentAmount?.toFixed(2)}, 
+          Monthly Repayment: ₦${loan.monthlyRepayment?.toFixed(2)}
+        `;
+        repaymentList.appendChild(repaymentItem);
+
+        // If detailed schedule exists, show it
+        if (loan.repaymentSchedule && loan.repaymentSchedule.length > 0) {
+          const scheduleUl = document.createElement('ul');
+          scheduleUl.className = 'mt-2';
+          loan.repaymentSchedule.forEach(item => {
+            const dueDate = new Date(item.dueDate);
+            const formattedDueDate = `${String(dueDate.getFullYear()).slice(-2)}/${String(dueDate.getMonth() + 1).padStart(2, '0')}/${String(dueDate.getDate()).padStart(2, '0')}`;
+            const scheduleLi = document.createElement('li');
+            scheduleLi.innerText = `Month ${item.month}: Due ${formattedDueDate}, Amount ₦${item.amount.toFixed(2)}`;
+            scheduleUl.appendChild(scheduleLi);
+          });
+          repaymentItem.appendChild(scheduleUl);
+        }
       });
     } catch (err) {
       console.error('Load loans error:', err);
       loanList.innerHTML = '<li class="list-group-item text-muted">No loans found or failed to load.</li>';
+      repaymentList.innerHTML = '<li class="list-group-item text-muted">No repayment schedule found.</li>';
     }
   }
   loadLoans();
 }
+
+
+
+
 
 
 

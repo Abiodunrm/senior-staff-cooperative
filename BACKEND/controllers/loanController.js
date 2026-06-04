@@ -37,15 +37,22 @@ const applyLoan = async (req, res) => {
     endDate.setFullYear(endDate.getFullYear() + yearsToAdd);
     endDate.setMonth(newMonth);
 
-    // Create loan
-    const loan = await Loan.create({
-      member: req.member._id,
-      amount,
-      durationMonths,
-      interestRate,
-      startDate,
-      endDate
-    });
+    // Repayment calculation
+const repaymentAmount = amount + (amount * (interestRate / 100));
+const monthlyRepayment = repaymentAmount / durationMonths;
+
+// Create loan
+const loan = await Loan.create({
+  member: req.member._id,
+  amount,
+  durationMonths,
+  interestRate,
+  startDate,
+  endDate,
+  repaymentAmount,
+  monthlyRepayment
+});
+
 
     res.status(201).json(loan);
   } catch (error) {
@@ -53,6 +60,9 @@ const applyLoan = async (req, res) => {
     res.status(500).json({ message: 'Server error applying for loan' });
   }
 };
+
+
+
 
 // @desc    Get all loans for logged-in member
 // @route   GET /api/loans
