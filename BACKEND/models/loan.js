@@ -14,10 +14,20 @@ repaymentSchedule: [
     amount: Number
   }
 ],
-  status: { type: String, enum: ['pending', 'approved', 'repaid'], default: 'pending' },
+loanType: {
+  type: String,
+  enum: ['Normal', 'Emergency', 'Commodity'],
+  required: true
+},
+
+  status: { type: String, enum: ['pending', 'approved', 'repaid', 'rejected'], default: 'pending' },
   startDate: { type: Date, default: Date.now },
   endDate: { type: Date } // set in controller
 }, { timestamps: true });
+
+
+
+
 
 module.exports = mongoose.model('Loan', loanSchema);
 

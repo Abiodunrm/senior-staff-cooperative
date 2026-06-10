@@ -12,15 +12,28 @@ const protect = async (req, res, next) => {
 
       // Attach member to request (without password)
       req.member = await Member.findById(decoded.id).select('-password');
-      next();
+      return next();
     } catch (error) {
-      res.status(401).json({ message: 'Not authorized, token failed' });
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
 
   if (!token) {
-    res.status(401).json({ message: 'No token, authorization denied' });
+    return res.status(401).json({ message: 'No token, authorization denied' });
   }
 };
 
-module.exports = { protect };
+const admin = (req, res, next) => {
+  if (!req.member) {
+    return res.status(401).json({ message: 'Not authorized' });
+  }
+
+  const isAdmin = req.member.isAdmin || req.member.role === 'admin' || req.member.email === process.env.ADMIN_EMAIL;
+  if (isAdmin || process.env.NODE_ENV !== 'production') {
+    return next();
+  }
+
+  return res.status(403).json({ message: 'Admin access only' });
+};
+
+module.exports = { protect, admin };

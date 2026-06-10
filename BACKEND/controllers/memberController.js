@@ -1,4 +1,5 @@
 const Member = require('../models/Member');
+const Contribution = require('../models/contribution');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const generateToken = require('../utils/generateToken');
@@ -46,13 +47,38 @@ const loginMember = async (req, res) => {
 };
 
 
+// @desc    Get all members
+// @route   GET /api/members
+// @access  Private/Admin
+// @desc    Get all members with total contributions
+// @route   GET /api/members
+// @access  Private/Admin
 const getMembers = async (req, res) => {
   try {
-    const members = await Member.find({});
-    res.json(members);
+    const members = await Member.find().select('name email');
+
+    // For each member, calculate total contributions
+    const membersWithTotals = await Promise.all(
+      members.map(async (m) => {
+        const total = await Contribution.aggregate([
+          { $match: { member: m._id } },
+          { $group: { _id: null, sum: { $sum: "$amount" } } }
+        ]);
+        return {
+          _id: m._id,
+          name: m.name,
+          email: m.email,
+          contribution: total.length > 0 ? total[0].sum : 0
+        };
+      })
+    );
+
+    res.json(membersWithTotals);
   } catch (error) {
-    res.status(500).json({ message: error.message || 'Failed to fetch members' });
+    console.error(error);
+    res.status(500).json({ message: 'Server error fetching members' });
   }
 };
+
 
 module.exports = { registerMember, loginMember, getMembers };

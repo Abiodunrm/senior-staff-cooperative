@@ -6,4 +6,4 @@ const contributionSchema = mongoose.Schema({
   date: { type: Date, default: Date.now }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Contribution', contributionSchema);
+module.exports = mongoose.models.Contribution || mongoose.model('Contribution', contributionSchema);

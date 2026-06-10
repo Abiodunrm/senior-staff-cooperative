@@ -28,17 +28,29 @@
 
 
   <h2 class="text-center">Apply for Loan</h2>
-  <form id="loanForm" class="mt-4">
+  <form id="loanForm">
   <div class="mb-3">
-    <label class="form-label">Loan Amount</label>
+    <label for="loanAmount" class="form-label">Loan Amount</label>
     <input type="number" id="loanAmount" class="form-control" required>
   </div>
+
   <div class="mb-3">
-    <label class="form-label">Duration (months)</label>
+    <label for="durationMonths" class="form-label">Duration (months)</label>
     <input type="number" id="durationMonths" class="form-control" required>
   </div>
-  <button type="submit" class="btn btn-primary w-100">Apply</button>
+
+  <div class="mb-3">
+    <label for="loanType" class="form-label">Loan Type</label>
+    <select id="loanType" class="form-select" required>
+      <option value="Normal">Normal Loan</option>
+      <option value="Emergency">Emergency Loan</option>
+      <option value="Commodity">Commodity/Electronics Loan</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Apply Loan</button>
 </form>
+
 
   <h3>Loan History</h3>
 <ul id="loanList"></ul>

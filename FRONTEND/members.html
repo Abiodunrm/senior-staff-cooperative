@@ -20,7 +20,7 @@
           <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
           <li class="nav-item"><a class="nav-link" href="register.html">Register</a></li>
           <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
-          <li class="nav-item"><a class="nav-link" href="faqs.html">FAQs</a></li>
+          <li class="nav-item"><a class="nav-link" href="admin.html">Admin</a></li>
           <li class="nav-item"><a class="nav-link" href="projects.html">Projects</a></li>
           <li class="nav-item"><a class="nav-link" href="news.html">News</a></li>
           <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
@@ -29,9 +29,27 @@
     </div>
   </nav>
 
+  <li class="nav-item">
+  <a id="adminLink" class="nav-link text-warning" href="admin.html" style="display:none;">
+    👑 Admin Dashboard
+  </a>
+</li>
+
+
   <!-- Members List -->
-  <h2 class="text-center mb-4">Registered Members</h2>
-  <ul id="memberList" class="list-group"></ul>
+  <div class="container mt-4">
+  <h2>Registered Members</h2>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Total Contribution</th>
+      </tr>
+    </thead>
+    <tbody id="membersTableBody"></tbody>
+  </table>
+</div>
 
   <!-- Footer -->
   <footer class="bg-dark text-white text-center py-3 mt-5">
